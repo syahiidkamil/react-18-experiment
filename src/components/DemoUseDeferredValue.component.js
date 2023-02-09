@@ -1,7 +1,14 @@
-import React, { useState, useTransition } from "react";
+import React, { useState, useDeferredValue } from "react";
 import { SAME_NAME_LIST } from "../utils/getNameList.util";
 
-const ListItem = ({ name, highlight, isPending }) => {
+const slowingDownFunction = () => {
+  JSON.stringify(SAME_NAME_LIST.slice(0, 5000));
+};
+
+const ListItem = ({ name, query, isPending }) => {
+  const highlight = useDeferredValue(query);
+  // const highlight = query; // without useDeferredValue to compare
+  slowingDownFunction();
   const index = name.toLowerCase().indexOf(highlight.toLowerCase());
   const prefixText = name.slice(0, index);
   const highlightText = name.slice(index, index + highlight.length); // highlight is might have different lower/capital case
@@ -25,29 +32,21 @@ const ListItem = ({ name, highlight, isPending }) => {
   );
 };
 
-const DemoUseTransition = () => {
+const DemoUseDeferredValue = () => {
   const [query, setQuery] = useState("");
-  const [hightlight, setHightlight] = useState("");
-  const [isPending, startTransition] = useTransition();
 
   const changeHandler = ({ target: { value } }) => {
     setQuery(value);
-    startTransition(() => setHightlight(value));
   };
 
   return (
     <div>
       <input onChange={changeHandler} value={query} type="text" />
       {SAME_NAME_LIST.map((name, i) => (
-        <ListItem
-          key={i}
-          name={name}
-          highlight={hightlight}
-          isPending={isPending}
-        />
+        <ListItem key={i} name={name} query={query} isPending={false} />
       ))}
     </div>
   );
 };
 
-export default DemoUseTransition;
+export default DemoUseDeferredValue;
